@@ -6,4 +6,6 @@
 
 @section('contenido')
     <h1>Nuevo Diagnostico</h1>
+    <br><br>
+<a href="{{route('diagnostico.index')}}"><button class="btn btn-primary">Volver</button></a>
 @endsection

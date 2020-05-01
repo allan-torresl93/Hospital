@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App;
 use Illuminate\Http\Request;
+use Gate;
 
 class ConsultaController extends Controller
 {
@@ -14,7 +15,8 @@ class ConsultaController extends Controller
      */
     public function index()
     {
-        return view('consulta.index');
+        $consultas = App\Consulta::orderby('fecha_co','asc')->get();
+       return view('consulta.index', compact('consultas'));
     }
 
     /**
@@ -24,7 +26,13 @@ class ConsultaController extends Controller
      */
     public function create()
     {
-        return view('consulta.insert');
+        if (Gate::denies('crear')) {
+        return redirect()->route('consulta.index');
+    }
+
+    $medicos = App\Medico::orderby('nombre','asc')->get();
+    $pacientes = App\Paciente::orderby('nombre','asc')->get();
+    return view('consulta.insert', compact('medicos','pacientes'));
     }
 
     /**
@@ -35,7 +43,16 @@ class ConsultaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'fecha_co' => 'required',
+            'idMedico' => 'required',
+            'idPaciente' => 'required'
+             ]);
+
+            App\Consulta::create($request->all());
+
+            return redirect()->route('consulta.index')
+            ->with('exito','se ha creado la consulta correctamente!');
     }
 
     /**
@@ -44,9 +61,17 @@ class ConsultaController extends Controller
      * @param  \App\Consulta  $consulta
      * @return \Illuminate\Http\Response
      */
-    public function show(Consulta $consulta)
+    public function show($id)
     {
-        //
+        $consulta = App\Consulta::join('medicos','consultas.idMedico','medicos.id')
+        ->join('pacientes','consultas.idPaciente','pacientes.id')
+        ->select('consultas.*','medicos.nombre as medico','pacientes.nombre as paciente')
+        ->where('consultas.id',$id)
+        ->first();
+
+        
+        
+        return view('consulta.view', compact('consultas'));
     }
 
     /**
@@ -55,11 +80,18 @@ class ConsultaController extends Controller
      * @param  \App\Consulta  $consulta
      * @return \Illuminate\Http\Response
      */
-    public function edit(Consulta $consulta)
+    public function edit($id)
     {
-        //
-    }
+        if(Gate::denies('editar')){
+            return redirect()->route('consulta.index');
+        }
 
+        $medicos = App\Medico::orderby('nombre','asc')->get();
+        $pacientes = App\Paciente::orderby('nombre','asc')->get();
+        $consulta = App\Consulta::findorfail($id);
+
+        return view('consulta.edit', compact('consultas','medicos','pacientes'));
+    }
     /**
      * Update the specified resource in storage.
      *
@@ -67,9 +99,21 @@ class ConsultaController extends Controller
      * @param  \App\Consulta  $consulta
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Consulta $consulta)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'fecha_co' => 'required',
+            'idMedico' => 'required',
+            'idPaciente' => 'required'
+        ]);
+
+
+        $consulta = App\Consulta::findorfail($id);
+
+        $consulta->update($request->all());
+
+        return redirect()->route('consulta.index')
+        ->with('exito','Consulta modificada con exito!');
     }
 
     /**
@@ -78,8 +122,17 @@ class ConsultaController extends Controller
      * @param  \App\Consulta  $consulta
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Consulta $consulta)
+    public function destroy($id)
     {
-        //
+        if (Gate::denies('eliminar')) {
+            return redirect()->route('consulta.index');
+        }
+
+        $consulta = App\Consulta::findorfail($id);
+
+        $consulta->delete();
+
+        return redirect()->route('consulta.index')
+        ->with('exito', 'Consulta Eliminada Correctamente');
     }
 }
