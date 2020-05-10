@@ -12,9 +12,17 @@ class DiagnosticoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('diagnostico.index');
+        if($request){
+            $consulta = $request->buscar;
+            $diagnosticos = App\Diagnostico::where('tipo_d', 'LIKE', '%' . $consulta . '%')
+                                        ->orderby('tipo_d','asc')
+                                        ->paginate(5);
+            return view('diagnostico.index', compact('diagnosticos','consulta'));
+        }
+        $diagnosticos = App\Diagnostico::orderby('tipo_d','asc')->paginate(5);        
+        return view('diagnostico.index', compact('diagnosticos'));
     }
 
     /**
@@ -35,7 +43,15 @@ class DiagnosticoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'codigo_d' => 'required',
+            'tipo_d' => 'required',
+            'complicaciones_d' => 'required',          
+        ]);
+
+        App\Diagnostico::create($request->all());
+
+        return redirect()->route('diagnostico.index')->with('exito','Se Ha Ingresado El Diagnostico Exitosamente');
     }
 
     /**
@@ -44,9 +60,11 @@ class DiagnosticoController extends Controller
      * @param  \App\Diagnostico  $diagnostico
      * @return \Illuminate\Http\Response
      */
-    public function show(Diagnostico $diagnostico)
+    public function show($id)
     {
-        //
+        $diagnostico = App\Diagnostico::findorfail($id);
+ 
+        return view('diagnostico.view', compact('diagnostico'));
     }
 
     /**
@@ -55,9 +73,10 @@ class DiagnosticoController extends Controller
      * @param  \App\Diagnostico  $diagnostico
      * @return \Illuminate\Http\Response
      */
-    public function edit(Diagnostico $diagnostico)
+    public function edit($id)
     {
-        //
+        $diagnostico = App\Diagnostico::findorfail($id); 
+       return view('diagnostico.edit', compact('diagnostico'));
     }
 
     /**
@@ -67,9 +86,20 @@ class DiagnosticoController extends Controller
      * @param  \App\Diagnostico  $diagnostico
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Diagnostico $diagnostico)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'codigo_d' => 'required',
+            'tipo_d' => 'required',
+            'complicaciones_d' => 'required', 
+        ]);
+ 
+       $diagnostico = App\Diagnostico::findorfail($id);
+ 
+       $diagnostico->update($request->all());
+ 
+       return redirect()->route('diagnostico.index')
+                        ->with('exito','Diagnostico modificado con exito!');
     }
 
     /**
@@ -78,8 +108,13 @@ class DiagnosticoController extends Controller
      * @param  \App\Diagnostico  $diagnostico
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Diagnostico $diagnostico)
+    public function destroy($id)
     {
-        //
+        $diagnostico = App\Diagnostico::findorfail($id);
+ 
+        $diagnostico->delete();
+ 
+        return redirect()->route('diagnostico.index')
+                        -> with('exito','Diagnostico eliminado correctamente!');
     }
 }

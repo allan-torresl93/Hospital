@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Fecha_Dia extends Model
 {
     //use SoftDeletes;
-    protected $fillable = ['fecha','idPaciente','idDiagnostico']; 
+    protected $fillable = ['fecha_f','idPaciente','idDiagnostico']; 
 }

@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Paciente extends Model
 {
     //use SoftDeletes;
-    protected $fillable = ['cedula','numero_registro','numero_cama','nombre','direccion','fecha_nacimiento','sexo','idSala']; 
+    protected $fillable = ['cedula_paciente','numero_registro_p','numero_cama_p','nombre_p','direccion_p','fecha_nacimiento_p','sexo_p','idSala']; 
 }

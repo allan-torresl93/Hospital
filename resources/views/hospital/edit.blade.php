@@ -26,42 +26,44 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Codigo del Hospital:</label>
-                    <input type="text" class="form-control" name="codigo_h" value="{{$hospital->codigo}}">
+                    <input type="text" class="form-control" name="codigo_h" value="{{$hospital->codigo_h}}">
                 </div>
             </div>
  
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Nombre del Hospital:</label>
-                    <input type="text" class="form-control" name="nombre_h" value="{{$hospital->nombre}}">
+                    <input type="text" class="form-control" name="nombre_h" value="{{$hospital->nombre_h}}">
                 </div>
             </div>
  
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Direccion del Hospital:</label>
-                    <input type="text" class="form-control" name="direccion_h" value="{{$hospital->direccion}}">
+                    <input type="text" class="form-control" name="direccion_h" value="{{$hospital->direccion_h}}">
                 </div>
             </div>
  
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Telefono del hospital:</label>
-                    <input type="number" class="form-control" name="telefono_h" value="{{$hospital->telefono}}">
+                    <input type="number" class="form-control" name="telefono_h" value="{{$hospital->telefono_h}}">
                 </div>
             </div>
  
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Cantidad de Camas del hospital:</label>
-                    <input type="number" class="form-control" name="cantidad_camas_h" value="{{$hospital->cantidadCamas}}">
+                    <input type="number" class="form-control" name="cantidad_camas_h" value="{{$hospital->cantidad_camas_h}}">
                 </div>
             </div>
             
             <div class="form-row">
                 <button type="submit" class="btn btn-primary">Modificar hospital</button>
-                <a href=" {{route('hospital.index')}}"><button class="btn btn-primary">Atras</button></a>
-            </div>
- 
+            </div> 
         </form>
+        <br>
+        <div class="form-row">
+            <a href=" {{route('hospital.index')}}"><button class="btn btn-primary">Atras</button></a>
+        </div>
 @endsection

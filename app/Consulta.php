@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Consulta extends Model
 {
     //use SoftDeletes;
-    protected $fillable = ['fecha','idMedico','idPaciente']; 
+    protected $fillable = ['fecha_co','idMedico','idPaciente']; 
 }

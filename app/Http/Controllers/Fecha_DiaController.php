@@ -12,9 +12,11 @@ class Fecha_DiaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('fecha_dia.index');
+        
+        $fecha_dias = App\Fecha_dia::orderby('fecha_f','asc')->get();        
+        return view('fecha_dia.index', compact('fecha_dias'));
     }
 
     /**
@@ -24,7 +26,9 @@ class Fecha_DiaController extends Controller
      */
     public function create()
     {
-        return view('fecha_dia.insert');
+        $pacientes = App\Paciente::orderby('nombre_p','asc')->get();
+        $diagnosticos = App\Diagnostico::orderby('tipo_d','asc')->get();
+        return view('fecha_dia.insert', compact('pacientes','diagnosticos'));
     }
 
     /**
@@ -35,7 +39,15 @@ class Fecha_DiaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'fecha_f' => 'required',
+            'idPaciente' => 'required', 
+            'idDiagnostico' => 'required'            
+        ]);
+
+        App\Fecha_dia::create($request->all());
+
+        return redirect()->route('fecha_dia.index')->with('exito','Se Ha Ingresado La Fecha Exitosamente');
     }
 
     /**
@@ -44,9 +56,16 @@ class Fecha_DiaController extends Controller
      * @param  \App\Fecha_Dia  $fecha_Dia
      * @return \Illuminate\Http\Response
      */
-    public function show(Fecha_Dia $fecha_Dia)
+    public function show($id)
     {
-        //
+        $detalle = App\Fecha_dia::join('pacientes','fecha_dias.idPaciente','pacientes.id')
+                                ->join('diagnosticos','fecha_dias.idDiagnostico','diagnosticos.id')
+                                ->select('fecha_dias.*','pacientes.nombre_p as hospital','diagnosticos.tipo_d as diagnostico')
+                                ->where('fecha_dias.id',$id)
+                                ->first();
+        
+ 
+        return view('fecha_dia.view', compact('fecha_dia'));
     }
 
     /**
@@ -55,9 +74,13 @@ class Fecha_DiaController extends Controller
      * @param  \App\Fecha_Dia  $fecha_Dia
      * @return \Illuminate\Http\Response
      */
-    public function edit(Fecha_Dia $fecha_Dia)
+    public function edit($id)
     {
-        //
+        $pacientes = App\Paciente::orderby('nombre_p','asc')->get();
+        $diagnosticos = App\Diagnostico::orderby('tipo_d','asc')->get();
+        $fecha_dia = App\Fecha_dia::findorfail($id);
+ 
+        return view('fecha_dia.edit', compact('fecha_dia','pacientes','diagnosticos'));
     }
 
     /**
@@ -67,9 +90,20 @@ class Fecha_DiaController extends Controller
      * @param  \App\Fecha_Dia  $fecha_Dia
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Fecha_Dia $fecha_Dia)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'fecha_f' => 'required',
+            'idPaciente' => 'required', 
+            'idDiagnostico' => 'required'  
+        ]);
+ 
+       $fecha_dia = App\Fecha_dia::findorfail($id);
+ 
+       $fecha_dia->update($request->all());
+ 
+       return redirect()->route('fecha_dia.index')
+                        ->with('exito','Fecha modificada con exito!');
     }
 
     /**
@@ -78,8 +112,13 @@ class Fecha_DiaController extends Controller
      * @param  \App\Fecha_Dia  $fecha_Dia
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Fecha_Dia $fecha_Dia)
+    public function destroy($id)
     {
-        //
+        $fecha_dia = App\Fecha_dia::findorfail($id);
+ 
+        $fecha_dia->delete();
+ 
+        return redirect()->route('fecha_dia.index')
+                        -> with('exito','Fecha eliminado correctamente!');
     }
 }

@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Sala extends Model
 {
     //use SoftDeletes;
-    protected $fillable = ['codigo','nombre','cantidad_camas','idHospital'];
+    protected $fillable = ['codigo_s','nombre_s','cantidad_camas_s','idHospital'];
 }

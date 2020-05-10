@@ -12,9 +12,17 @@ class MedicoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('medico.index');
+        if($request){
+            $consulta = $request->buscar;
+            $medicos = App\Medico::where('nombre_m', 'LIKE', '%' . $consulta . '%')
+                                        ->orderby('nombre_m','asc')
+                                        ->paginate(5);
+            return view('medico.index', compact('medicos','consulta'));
+        }
+        $medicos = App\Medico::orderby('nombre_m','asc')->paginate(5);        
+        return view('medico.index', compact('medicos'));
     }
 
     /**
@@ -24,7 +32,8 @@ class MedicoController extends Controller
      */
     public function create()
     {
-        return view('medico.insert');
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        return view('medico.insert', compact('hospitals'));
     }
 
     /**
@@ -35,7 +44,16 @@ class MedicoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'cedula_m' => 'required',
+            'nombre_m' => 'required',
+            'especialidad_m' => 'required',
+            'idHospital' => 'required'
+        ]);
+
+        App\Medico::create($request->all());
+
+        return redirect()->route('medico.index')->with('exito','Se Ha Ingresado El Medico Exitosamente');
     }
 
     /**
@@ -44,9 +62,14 @@ class MedicoController extends Controller
      * @param  \App\Medico  $medico
      * @return \Illuminate\Http\Response
      */
-    public function show(Medico $medico)
+    public function show($id)
     {
-        //
+        $medico = App\Medico::join('hospitals','medicos.idHospital','hospitals.id')
+                            ->select('medicos.*','hospitals.nombre_h as hospital')
+                            ->where('medicos.id',$id)
+                            ->first();
+ 
+        return view('medico.view', compact('medico'));
     }
 
     /**
@@ -55,9 +78,12 @@ class MedicoController extends Controller
      * @param  \App\Medico  $medico
      * @return \Illuminate\Http\Response
      */
-    public function edit(Medico $medico)
+    public function edit($id)
     {
-        //
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        $medico = App\Medico::findorfail($id);
+ 
+        return view('medico.edit', compact('medico','hospitals'));
     }
 
     /**
@@ -67,9 +93,21 @@ class MedicoController extends Controller
      * @param  \App\Medico  $medico
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Medico $medico)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'cedula_m' => 'required',
+            'nombre_m' => 'required',
+            'especialidad_m' => 'required', 
+            'idHospital' => 'required'
+        ]);
+ 
+       $medico = App\Medico::findorfail($id);
+ 
+       $medico->update($request->all());
+ 
+       return redirect()->route('medico.index')
+                        ->with('exito','Medico modificado con exito!');
     }
 
     /**
@@ -78,8 +116,13 @@ class MedicoController extends Controller
      * @param  \App\Medico  $medico
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Medico $medico)
+    public function destroy($id)
     {
-        //
+        $medico = App\Medico::findorfail($id);
+ 
+        $medico->delete();
+ 
+        return redirect()->route('medico.index')
+                        -> with('exito','Medico eliminado correctamente!');
     }
 }

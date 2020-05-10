@@ -12,9 +12,17 @@ class SalaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('sala.index');
+        if($request){
+            $consulta = $request->buscar;
+            $salas = App\Sala::where('nombre_s', 'LIKE', '%' . $consulta . '%')
+                                        ->orderby('nombre_s','asc')
+                                        ->paginate(5);
+            return view('sala.index', compact('salas','consulta'));
+        }
+        $salas = App\Sala::orderby('nombre_s','asc')->paginate(5);        
+        return view('sala.index', compact('salas'));
     }
 
     /**
@@ -24,7 +32,8 @@ class SalaController extends Controller
      */
     public function create()
     {
-        return view('sala.insert');
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        return view('sala.insert', compact('hospitals'));
     }
 
     /**
@@ -35,7 +44,16 @@ class SalaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'codigo_s' => 'required',
+            'nombre_s' => 'required',
+            'cantidad_camas_s' => 'required',
+            'idHospital' => 'required'
+        ]);
+
+        App\Sala::create($request->all());
+
+        return redirect()->route('sala.index')->with('exito','Se Ha Ingresado La Sala Exitosamente');
     }
 
     /**
@@ -44,9 +62,14 @@ class SalaController extends Controller
      * @param  \App\Sala  $sala
      * @return \Illuminate\Http\Response
      */
-    public function show(Sala $sala)
+    public function show($id)
     {
-        //
+        $sala = App\Sala::join('hospitals','salas.idHospital','hospitals.id')
+                            ->select('salas.*','hospitals.nombre_h as hospital')
+                            ->where('salas.id',$id)
+                            ->first();
+ 
+        return view('sala.view', compact('sala'));
     }
 
     /**
@@ -55,9 +78,12 @@ class SalaController extends Controller
      * @param  \App\Sala  $sala
      * @return \Illuminate\Http\Response
      */
-    public function edit(Sala $sala)
+    public function edit($id)
     {
-        //
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        $sala = App\Sala::findorfail($id);
+ 
+        return view('sala.edit', compact('sala','hospitals'));
     }
 
     /**
@@ -67,9 +93,21 @@ class SalaController extends Controller
      * @param  \App\Sala  $sala
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Sala $sala)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'codigo_s' => 'required',
+            'nombre_s' => 'required',
+            'cantidad_camas_s' => 'required', 
+            'idHospital' => 'required'
+        ]);
+ 
+       $sala = App\Sala::findorfail($id);
+ 
+       $sala->update($request->all());
+ 
+       return redirect()->route('sala.index')
+                        ->with('exito','Sala modificado con exito!');
     }
 
     /**
@@ -78,8 +116,13 @@ class SalaController extends Controller
      * @param  \App\Sala  $sala
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Sala $sala)
+    public function destroy($id)
     {
-        //
+        $sala = App\Sala::findorfail($id);
+ 
+        $sala->delete();
+ 
+        return redirect()->route('sala.index')
+                        -> with('exito','Sala eliminado correctamente!');
     }
 }

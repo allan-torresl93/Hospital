@@ -12,9 +12,11 @@ class DetalleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('detalle.index');
+        
+        $detalles = App\Detalle::orderby('fecha_de','asc')->get();        
+        return view('detalle.index', compact('detalles'));
     }
 
     /**
@@ -24,7 +26,9 @@ class DetalleController extends Controller
      */
     public function create()
     {
-        return view('detalle.insert');
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        $laboratorios = App\Laboratorio::orderby('nombre_l','asc')->get();
+        return view('detalle.insert', compact('hospitals','laboratorios'));
     }
 
     /**
@@ -35,7 +39,16 @@ class DetalleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'descripcion_de' => 'required',
+            'fecha_de' => 'required',
+            'idHospital' => 'required', 
+            'idLaboratorio' => 'required'            
+        ]);
+
+        App\Detalle::create($request->all());
+
+        return redirect()->route('detalle.index')->with('exito','Se Ha Ingresado El Detalle Exitosamente');
     }
 
     /**
@@ -44,9 +57,16 @@ class DetalleController extends Controller
      * @param  \App\Detalle  $detalle
      * @return \Illuminate\Http\Response
      */
-    public function show(Detalle $detalle)
+    public function show($id)
     {
-        //
+        $detalle = App\Detalle::join('hospitals','detalles.idHospital','hospitals.id')
+                                ->join('laboratorios','detalles.idLaboratorio','laboratorios.id')
+                                ->select('detalles.*','hospitals.nombre_h as hospital','laboratorios.nombre_l as laboratorio')
+                                ->where('detalles.id',$id)
+                                ->first();
+        
+ 
+        return view('detalle.view', compact('detalle'));
     }
 
     /**
@@ -55,9 +75,13 @@ class DetalleController extends Controller
      * @param  \App\Detalle  $detalle
      * @return \Illuminate\Http\Response
      */
-    public function edit(Detalle $detalle)
+    public function edit($id)
     {
-        //
+        $hospitals = App\Hospital::orderby('nombre_h','asc')->get();
+        $laboratorios = App\Laboratorio::orderby('nombre_l','asc')->get();
+        $detalle = App\Detalle::findorfail($id);
+ 
+        return view('detalle.edit', compact('detalle','hospitals','laboratorios'));
     }
 
     /**
@@ -67,9 +91,21 @@ class DetalleController extends Controller
      * @param  \App\Detalle  $detalle
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Detalle $detalle)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'descripcion_de' => 'required',
+            'fecha_de' => 'required',
+            'idHospital' => 'required', 
+            'idLaboratorio' => 'required'  
+        ]);
+ 
+       $detalle = App\Detalle::findorfail($id);
+ 
+       $detalle->update($request->all());
+ 
+       return redirect()->route('detalle.index')
+                        ->with('exito','Detalle modificado con exito!');
     }
 
     /**
@@ -78,8 +114,13 @@ class DetalleController extends Controller
      * @param  \App\Detalle  $detalle
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Detalle $detalle)
+    public function destroy($id)
     {
-        //
+        $detalle = App\Detalle::findorfail($id);
+ 
+        $detalle->delete();
+ 
+        return redirect()->route('detalle.index')
+                        -> with('exito','Detalle eliminado correctamente!');
     }
 }
